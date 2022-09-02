@@ -16,12 +16,22 @@
 <body>
     <?php 
 
-        $servername = "127.0.0.1";
-        $username = "root";
-        $password = "";
-        $dbname = "ecs417";
-        // Creates connection
-        $conn = new mysqli($servername, $username, $password, $dbname);
+        // $servername = "127.0.0.1";
+        // $username = "root";
+        // $password = "";
+        // $dbname = "ecs417";
+        // // Creates connection
+        // $conn = new mysqli($servername, $username, $password, $dbname);
+        //Get Heroku ClearDB connection information
+        $cleardb_url = parse_url(getenv("CLEARDB_DATABASE_URL"));
+        $cleardb_server = $cleardb_url["host"];
+        $cleardb_username = $cleardb_url["user"];
+        $cleardb_password = $cleardb_url["pass"];
+        $cleardb_db = substr($cleardb_url["path"],1);
+        $active_group = 'default';
+        $query_builder = TRUE;
+        // Connect to DB
+        $conn = new mysqli($cleardb_server, $cleardb_username, $cleardb_password, $cleardb_db);
         // Checks connection
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
@@ -31,11 +41,11 @@
 
             if ($_SERVER['REQUEST_METHOD'] == 'POST'){
                 $_SESSION['name'] = null;
-                $sql = $conn->query('SELECT `password` FROM `users` WHERE `users`.`email` = "' .$_POST['email']. '" AND `users`.`password` = "'.$_POST['password'].'" ;');
+                $sql = $conn->query('SELECT `password` FROM `user` WHERE `user`.`email` = "' .$_POST['email']. '" AND `user`.`password` = "'.$_POST['password'].'" ;');
                 $num_rows=mysqli_num_rows($sql);
                 if ($num_rows>0){
 
-                    $result = $conn->query('SELECT SUBSTRING(firstName, 1, 100) FROM `users` WHERE `users`.`email` = "' .$_POST['email'].'";');
+                    $result = $conn->query('SELECT SUBSTRING(firstName, 1, 100) FROM `user` WHERE `user`.`email` = "' .$_POST['email'].'";');
                     $name = $result->fetch_array()[0] ?? '';
                     $_SESSION['name'] = $name;  
                 }
